@@ -1,7 +1,7 @@
 // src/app/page.tsx
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import SessionStats from '@/components/SessionStats';
 import SessionFilter from '@/components/SessionFilter';
 import SessionTable from '@/components/SessionTable';
@@ -22,41 +22,48 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<SessionSummary | null>(null);
   const [projects, setProjects] = useState<string[]>([]);
-
-  const fetchSessions = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: PAGE_SIZE.toString(),
-      });
-      if (selectedProject) params.set('project', selectedProject);
-      if (searchQuery) params.set('search', searchQuery);
-
-      const res = await fetch(`/api/sessions?${params}`);
-      if (!res.ok) throw new Error(`请求失败: ${res.status}`);
-      const data = await res.json();
-      setSessions(data.sessions);
-      setStats(data.stats);
-      setTotal(data.total);
-
-      if (projects.length === 0 && data.stats) {
-        const allRes = await fetch('/api/sessions?pageSize=500');
-        const allData = await allRes.json() as { sessions: { project: string }[] };
-        const projSet = new Set(allData.sessions.map(s => s.project));
-        setProjects(Array.from(projSet).sort());
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '获取数据失败');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, selectedProject, searchQuery]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          pageSize: PAGE_SIZE.toString(),
+        });
+        if (selectedProject) params.set('project', selectedProject);
+        if (searchQuery) params.set('search', searchQuery);
+
+        const res = await fetch(`/api/sessions?${params}`);
+        if (cancelled) return;
+        if (!res.ok) throw new Error(`请求失败: ${res.status}`);
+        const data = await res.json();
+        if (cancelled) return;
+        setSessions(data.sessions);
+        setStats(data.stats);
+        setTotal(data.total);
+        setError(null);
+
+        if (projects.length === 0 && data.stats) {
+          const allRes = await fetch('/api/sessions?pageSize=500');
+          if (cancelled) return;
+          const allData = await allRes.json() as { sessions: { project: string }[] };
+          const projSet = new Set(allData.sessions.map(s => s.project));
+          setProjects(Array.from(projSet).sort());
+        }
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : '获取数据失败');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => { cancelled = true; };
+  }, [page, selectedProject, searchQuery, refreshKey]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +71,7 @@ export default function HomePage() {
   };
 
   const handleDeleted = () => {
-    fetchSessions();
+    setRefreshKey(k => k + 1);
   };
 
   return (
@@ -107,7 +114,7 @@ export default function HomePage() {
         {error && (
           <div className="p-4 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400 text-sm">
             {error}
-            <button onClick={fetchSessions} className="ml-2 underline">重试</button>
+            <button onClick={() => setRefreshKey(k => k + 1)} className="ml-2 underline">重试</button>
           </div>
         )}
 

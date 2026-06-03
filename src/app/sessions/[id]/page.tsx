@@ -19,28 +19,35 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
   const [filter, setFilter] = useState('all');
   const [showDelete, setShowDelete] = useState(false);
 
-  const fetchSession = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/sessions/${id}`);
-      if (res.status === 404) {
-        setError('会话未找到');
-        setLoading(false);
-        return;
-      }
-      if (!res.ok) throw new Error(`请求失败: ${res.status}`);
-      const data = await res.json();
-      setSession(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '获取会话详情失败');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchSession();
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/sessions/${id}`);
+        if (cancelled) return;
+        if (res.status === 404) {
+          setError('会话未找到');
+          return;
+        }
+        if (!res.ok) throw new Error(`请求失败: ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setSession(data);
+          setError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : '获取会话详情失败');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => { cancelled = true; };
   }, [id]);
 
   const typeCounts = () => {
