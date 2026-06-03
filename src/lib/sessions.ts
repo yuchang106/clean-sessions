@@ -58,7 +58,7 @@ function cleanUserMessage(content: string): string {
 }
 
 /**
- * 读取 history.jsonl 并按 sessionId 聚合，取每组最新的 display。
+ * 读取 history.jsonl 并按 sessionId 聚合，取每组第一条有意义的非命令 display。
  * 按时间戳降序排列。
  */
 export function getAllSessions(): SessionSummary[] {
@@ -67,31 +67,54 @@ export function getAllSessions(): SessionSummary[] {
   const content = readFileSync(HISTORY_FILE, 'utf-8');
   const lines = content.trim().split('\n').filter(Boolean);
 
-  // 按 sessionId 分组，取最新的记录
-  const sessionMap = new Map<string, HistoryEntry>();
+  // 按 sessionId 分组，保留所有记录
+  const sessionGroups = new Map<string, HistoryEntry[]>();
 
   for (const line of lines) {
     try {
       const entry: HistoryEntry = JSON.parse(line);
-      const existing = sessionMap.get(entry.sessionId);
-      if (!existing || entry.timestamp > existing.timestamp) {
-        sessionMap.set(entry.sessionId, entry);
-      }
+      const group = sessionGroups.get(entry.sessionId) || [];
+      group.push(entry);
+      sessionGroups.set(entry.sessionId, group);
     } catch {
-      continue; // 跳过解析失败的行
+      continue;
     }
   }
 
-  // 构建 summary 并按时间戳降序
-  const sessions: SessionSummary[] = Array.from(sessionMap.values())
-    .map(entry => ({
-      sessionId: entry.sessionId,
-      display: entry.display,
-      timestamp: entry.timestamp,
-      project: path.basename(entry.project), // 只取项目名
-    }))
-    .sort((a, b) => b.timestamp - a.timestamp);
+  // 无意义命令集合
+  const commandSet = new Set([
+    '/exit', 'exit', '/quit', 'quit', '/clear', '/new',
+    '/resume', '/reload-plugins', '/plugins', '/help',
+    '/status', '/config', '/cost', '/effort',
+    '1', '2', '3', '4',
+  ]);
 
+  function isCommand(display: string): boolean {
+    const d = display.trim().toLowerCase();
+    if (commandSet.has(d)) return true;
+    if (d.startsWith('/') && d.length < 20) return true;
+    if (d.length <= 1) return true;
+    return false;
+  }
+
+  const sessions: SessionSummary[] = [];
+
+  for (const [, entries] of sessionGroups) {
+    entries.sort((a, b) => a.timestamp - b.timestamp);
+
+    // 取第一条非命令消息作为标题
+    const best = entries.find(e => !isCommand(e.display)) || entries[0];
+    const latest = entries[entries.length - 1];
+
+    sessions.push({
+      sessionId: latest.sessionId,
+      display: best.display,
+      timestamp: latest.timestamp,
+      project: path.basename(latest.project),
+    });
+  }
+
+  sessions.sort((a, b) => b.timestamp - a.timestamp);
   return sessions;
 }
 
