@@ -14,7 +14,7 @@ export default function SessionHeader({ session, onDelete }: SessionHeaderProps)
     <div>
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
-        <Link href="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+        <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
           ← 返回列表
         </Link>
         <span>/</span>

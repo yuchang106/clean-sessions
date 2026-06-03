@@ -61,7 +61,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
             <div>
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline mb-2"
+                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline mb-2 font-medium"
               >
                 {expanded ? '收起附件内容 ▲' : '展开附件内容 ▼'}
               </button>

@@ -16,7 +16,7 @@ export default function SessionFilter({ projects, selectedProject, onSelect }: S
         onClick={() => onSelect('')}
         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
           selectedProject === ''
-            ? 'bg-blue-600 text-white'
+            ? 'bg-indigo-600 text-white shadow-sm'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
         }`}
       >
@@ -28,7 +28,7 @@ export default function SessionFilter({ projects, selectedProject, onSelect }: S
           onClick={() => onSelect(project)}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             selectedProject === project
-              ? 'bg-blue-600 text-white'
+              ? 'bg-indigo-600 text-white shadow-sm'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >

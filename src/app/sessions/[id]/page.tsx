@@ -89,7 +89,7 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
           <div className="text-5xl mb-4">🔍</div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{error}</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-4">该会话不存在或已被删除</p>
-          <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">← 返回列表</Link>
+          <Link href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">← 返回列表</Link>
         </div>
       </div>
     );

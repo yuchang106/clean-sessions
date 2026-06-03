@@ -34,7 +34,7 @@ export default function RawJsonViewer({ sessionId }: RawJsonViewerProps) {
 
   return (
     <details open={expanded} onToggle={toggleExpand} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-      <summary className="px-4 py-3 bg-gray-50 dark:bg-gray-800 text-sm font-medium text-blue-600 dark:text-blue-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none">
+      <summary className="px-4 py-3 bg-gray-50 dark:bg-gray-800 text-sm font-medium text-indigo-600 dark:text-indigo-400 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none">
         {expanded ? '收起原始 JSONL 数据' : '显示原始 JSONL 数据'}
       </summary>
       <div className="p-0">

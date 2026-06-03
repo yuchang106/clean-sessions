@@ -24,25 +24,28 @@ export default function SessionStats({ stats, loading }: SessionStatsProps) {
 
   if (!stats) return null;
 
-  const cards = [
-    { label: '总会话数', value: stats.total.toString(), icon: '💬' },
-    { label: '项目数', value: stats.projects.toString(), icon: '📁' },
-    { label: '今日会话', value: stats.todayCount.toString(), icon: '📅' },
-    { label: '占用空间', value: stats.totalSize, icon: '📦' },
+const cards = [
+    { label: '总会话数', value: stats.total.toString(), icon: '💬', accent: 'from-indigo-500/5 to-purple-500/5' },
+    { label: '项目数', value: stats.projects.toString(), icon: '📁', accent: 'from-emerald-500/5 to-teal-500/5' },
+    { label: '今日会话', value: stats.todayCount.toString(), icon: '📅', accent: 'from-amber-500/5 to-orange-500/5' },
+    { label: '占用空间', value: stats.totalSize, icon: '📦', accent: 'from-blue-500/5 to-cyan-500/5' },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      {cards.map((card) => (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {cards.map((card, idx) => (
         <div
           key={card.label}
-          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow"
+          className="group relative bg-white dark:bg-gray-800/80 rounded-xl border border-gray-200/80 dark:border-gray-700/50 p-4 hover:shadow-lg hover:shadow-indigo-500/5 dark:hover:shadow-indigo-500/10 transition-all duration-200 overflow-hidden"
         >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">{card.label}</span>
-            <span className="text-lg">{card.icon}</span>
+          <div className={`absolute inset-0 bg-gradient-to-br ${card.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">{card.label}</span>
+              <span className="text-lg">{card.icon}</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white tabular-nums">{card.value}</div>
           </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{card.value}</div>
         </div>
       ))}
     </div>

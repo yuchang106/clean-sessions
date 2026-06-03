@@ -22,7 +22,7 @@ export default function MessageFilter({ options, selected, onSelect }: MessageFi
           onClick={() => onSelect(opt.key)}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             selected === opt.key
-              ? 'bg-blue-600 text-white'
+              ? 'bg-indigo-600 text-white shadow-sm'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
