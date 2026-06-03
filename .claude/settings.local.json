@@ -24,7 +24,11 @@
       "Bash(curl -s http://localhost:3000/api/sessions/4cdf10b0-ef32-4373-927c-4a8f6b69f77c)",
       "Bash(python3 -c ' *)",
       "Bash(curl -s http://localhost:3000/)",
-      "Bash(git commit -m 'fix: remove synchronous setState calls from useEffect bodies *)"
+      "Bash(git commit -m 'fix: remove synchronous setState calls from useEffect bodies *)",
+      "Bash(curl -s \"http://localhost:3000/api/sessions?pageSize=500\")",
+      "Read(//Users/yzy/.claude/session-env/**)",
+      "Read(//Users/yzy/.claude/**)",
+      "Bash(curl -s \"http://localhost:3000/api/sessions/def3dd1b-efa0-4861-9ede-f412ac667b15\")"
     ]
   }
 }
