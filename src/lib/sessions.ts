@@ -2,12 +2,60 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
 import { rm } from 'fs/promises';
 import path from 'path';
-import { HistoryEntry, SessionSummary, SessionStats, SessionMessage, SessionDetail } from './types';
+import { HistoryEntry, SessionSummary, SessionStats, SessionMessage, SessionDetail, ContentBlock } from './types';
 
 const CLAUDE_DIR = path.join(process.env.HOME || '/Users/yzy', '.claude');
 const HISTORY_FILE = path.join(CLAUDE_DIR, 'history.jsonl');
 const PROJECTS_DIR = path.join(CLAUDE_DIR, 'projects');
 const SESSION_ENV_DIR = path.join(CLAUDE_DIR, 'session-env');
+
+/**
+ * 尝试将字符串解析为内容块数组（助手消息的 content blocks 格式）
+ */
+function tryParseContentBlocks(raw: string): ContentBlock[] | null {
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].type) {
+      // Validate it looks like content blocks
+      const validTypes = ['text', 'thinking', 'tool_use', 'tool_result'];
+      if (parsed.some((b: Record<string, unknown>) => validTypes.includes(String(b.type)))) {
+        return parsed as ContentBlock[];
+      }
+    }
+  } catch {
+    // Not JSON
+  }
+  return null;
+}
+
+/**
+ * 从内容块数组中提取纯文本内容
+ */
+function extractTextFromBlocks(blocks: ContentBlock[]): string {
+  return blocks
+    .filter(b => b.type === 'text' && b.text)
+    .map(b => b.text!)
+    .join('\n');
+}
+
+/**
+ * 清理用户消息中的命令/系统 XML 标签
+ */
+function cleanUserMessage(content: string): string {
+  return content
+    // 移除 <local-command-caveat>...</local-command-caveat>
+    .replace(/<local-command-caveat>[\s\S]*?<\/local-command-caveat>/g, '')
+    // 移除 <command-name>...</command-name> 及其周围空白
+    .replace(/<command-name>[\s\S]*?<\/command-name>/g, '')
+    // 移除 <command-message>...</command-message>
+    .replace(/<command-message>[\s\S]*?<\/command-message>/g, '')
+    // 移除 <command-args>...</command-args>
+    .replace(/<command-args>[\s\S]*?<\/command-args>/g, '')
+    // 移除 <local-command-stdout>...</local-command-stdout>
+    .replace(/<local-command-stdout>[\s\S]*?<\/local-command-stdout>/g, '')
+    // 清理多余空白行 打印后的多余空白
+    .trim();
+}
 
 /**
  * 读取 history.jsonl 并按 sessionId 聚合，取每组最新的 display。
@@ -133,19 +181,59 @@ export function getSessionDetail(sessionId: string): SessionDetail | null {
         uuid: parsed.uuid,
       };
 
+      // 跳过不可展示的元数据类型
+      if (['ai-title', 'last-prompt', 'permission-mode'].includes(parsed.type)) {
+        continue;
+      }
+
       if (parsed.type === 'user' && parsed.message) {
         msg.role = 'user';
-        msg.content = typeof parsed.message.content === 'string'
+        const rawContent = typeof parsed.message.content === 'string'
           ? parsed.message.content
           : JSON.stringify(parsed.message.content);
+
+        // 尝试解析 tool_result 内容块
+        const blocks = tryParseContentBlocks(rawContent);
+        if (blocks) {
+          msg.contentBlocks = blocks;
+          msg.content = blocks
+            .filter(b => b.type === 'tool_result')
+            .map(b => {
+              const c = b.content;
+              if (Array.isArray(c)) return c.join('\n');
+              if (typeof c === 'string') return c;
+              return JSON.stringify(c, null, 2);
+            })
+            .join('\n');
+          if (!msg.content) msg.content = '(tool result)';
+        } else {
+          // 清理命令标签，保留有意义的内容
+          const cleaned = cleanUserMessage(rawContent);
+          msg.content = cleaned || undefined;
+        }
       } else if (parsed.type === 'assistant' && parsed.message) {
         msg.role = 'assistant';
-        msg.content = typeof parsed.message.content === 'string'
+        const rawContent = typeof parsed.message.content === 'string'
           ? parsed.message.content
           : JSON.stringify(parsed.message.content);
+
+        // 解析 content blocks（text/thinking/tool_use）
+        const blocks = tryParseContentBlocks(rawContent);
+        if (blocks) {
+          msg.contentBlocks = blocks;
+          msg.content = extractTextFromBlocks(blocks);
+          if (!msg.content) msg.content = '';
+        } else {
+          msg.content = rawContent;
+        }
       } else if (parsed.type === 'attachment') {
         msg.role = 'attachment';
-        msg.content = parsed.attachment?.content || parsed.attachment?.type || '';
+        const attachmentType = parsed.attachment?.type || parsed.attachment?.hookName || 'attachment';
+        msg.content = typeof parsed.attachment?.content === 'string'
+          ? parsed.attachment.content
+          : parsed.attachment?.content
+            ? JSON.stringify(parsed.attachment.content, null, 2)
+            : attachmentType;
       } else if (parsed.type === 'system') {
         msg.role = parsed.subtype || 'system';
         msg.content = parsed.content || '';
@@ -155,7 +243,7 @@ export function getSessionDetail(sessionId: string): SessionDetail | null {
         msg.content = 'File history snapshot';
       }
 
-      // 截取内容预览（用于列表展示）
+      // 截取内容预览
       if (msg.content && msg.content.length > 200) {
         msg.contentPreview = msg.content.substring(0, 200) + '...';
       }

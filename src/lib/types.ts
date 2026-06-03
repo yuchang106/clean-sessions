@@ -20,11 +20,27 @@ export interface SessionSummary {
 /** 会话消息类型 */
 export type MessageType = 'user' | 'assistant' | 'system' | 'attachment' | 'mode' | 'file-history';
 
+/** 内容块类型 */
+export type ContentBlockType = 'text' | 'thinking' | 'tool_use' | 'tool_result';
+
+/** 解析后的内容块 */
+export interface ContentBlock {
+  type: ContentBlockType;
+  text?: string;
+  thinking?: string;
+  name?: string;
+  input?: unknown;
+  content?: unknown;
+  tool_use_id?: string;
+}
+
 /** 会话消息条目 */
 export interface SessionMessage {
   type: MessageType;
   role?: string;
   content?: string;
+  /** 解析后的内容块数组（助手消息的工具调用/思考块等） */
+  contentBlocks?: ContentBlock[];
   contentPreview?: string;
   timestamp?: string;
   uuid?: string;
