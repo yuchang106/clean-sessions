@@ -1,0 +1,130 @@
+<h2>详情页面设计 — 会话信息可视化</h2>
+<p class="subtitle">以可视化界面的形式展示 JSONL 会话内容</p>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">会话详情 — 可视化视图</div>
+  <div class="mockup-body" style="padding:0;">
+    <!-- Top navigation bar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="cursor:pointer;color:var(--primary);font-size:14px;">← 返回列表</span>
+        <span style="color:var(--muted);">/</span>
+        <span style="font-weight:500;font-size:14px;">会话详情</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <span class="mock-button" style="font-size:12px;">查看原始 JSONL</span>
+        <span class="mock-button" style="font-size:12px;background:#ef4444;color:white;border:none;">删除此会话</span>
+      </div>
+    </div>
+
+    <!-- Session info header -->
+    <div style="padding:16px;border-bottom:1px solid var(--border);">
+      <div style="font-size:18px;font-weight:600;margin-bottom:8px;">显示所有已经安装的skills</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;font-size:13px;color:var(--muted);">
+        <div><strong>Session ID:</strong> <span style="font-family:monospace;">4cdf10b0-ef32-4373-927c-4a8f6b69f77c</span></div>
+        <div><strong>项目:</strong> claude-code</div>
+        <div><strong>创建时间:</strong> 2026-05-29 13:53</div>
+        <div><strong>最后活动:</strong> 2026-05-29 13:58</div>
+        <div><strong>消息数:</strong> 12</div>
+        <div><strong>文件大小:</strong> 25.8 KB</div>
+      </div>
+    </div>
+
+    <!-- Message filter tabs -->
+    <div style="display:flex;gap:4px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface);">
+      <span style="background:var(--primary);color:white;padding:4px 12px;border-radius:12px;font-size:12px;cursor:pointer;">全部 (12)</span>
+      <span style="background:var(--surface);border:1px solid var(--border);padding:4px 12px;border-radius:12px;font-size:12px;cursor:pointer;">用户 (3)</span>
+      <span style="background:var(--surface);border:1px solid var(--border);padding:4px 12px;border-radius:12px;font-size:12px;cursor:pointer;">助手 (3)</span>
+      <span style="background:var(--surface);border:1px solid var(--border);padding:4px 12px;border-radius:12px;font-size:12px;cursor:pointer;">系统 (4)</span>
+      <span style="background:var(--surface);border:1px solid var(--border);padding:4px 12px;border-radius:12px;font-size:12px;cursor:pointer;">附件 (2)</span>
+    </div>
+
+    <!-- Conversation messages -->
+    <div style="padding:16px;display:flex;flex-direction:column;gap:12px;max-height:500px;overflow-y:auto;">
+
+      <!-- User message -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#3b82f6;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">U</div>
+        <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:12px;font-weight:600;color:#3b82f6;">用户</span>
+            <span style="font-size:11px;color:var(--muted);">2026-05-29 05:54</span>
+          </div>
+          <div style="font-size:13px;">显示所有安装的skills</div>
+        </div>
+      </div>
+
+      <!-- Assistant message -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">A</div>
+        <div style="flex:1;background:#0f172a;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:monospace;font-size:12px;line-height:1.6;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:12px;font-weight:600;color:#10b981;">Claude</span>
+            <span style="font-size:11px;color:var(--muted);">2026-05-29 05:54</span>
+          </div>
+          <div>让我查看当前环境和已安装的 skills ...</div>
+        </div>
+      </div>
+
+      <!-- System message -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#8b5cf6;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">S</div>
+        <div style="flex:1;border:1px dashed var(--border);border-radius:8px;padding:10px 14px;background:var(--surface);opacity:0.8;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:12px;font-weight:600;color:#8b5cf6;">系统 · 文件快照</span>
+            <span style="font-size:11px;color:var(--muted);">2026-05-29 05:54</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);font-style:italic;">file-history-snapshot — 追踪文件备份</div>
+        </div>
+      </div>
+
+      <!-- Attachment message (collapsible) -->
+      <div style="display:flex;gap:8px;align-items:flex-start;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#f59e0b;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;">T</div>
+        <div style="flex:1;border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:12px;font-weight:600;color:#f59e0b;">工具调用 · skill_listing</span>
+            <span style="font-size:11px;color:var(--muted);">2026-05-29 05:54</span>
+          </div>
+          <details>
+            <summary style="font-size:12px;cursor:pointer;color:var(--primary);">点击查看附件内容（包含 27 个 skills）</summary>
+            <pre style="margin-top:8px;font-size:11px;background:#0f172a;padding:8px;border-radius:4px;overflow-x:auto;max-height:200px;font-family:monospace;">
+- superpowers:brainstorming
+- superpowers:dispatching-parallel-agents
+- superpowers:executing-plans
+- superpowers:finishing-a-development-branch
+- superpowers:receiving-code-review
+- ... (27 skills total)</pre>
+          </details>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Raw JSONL toggle -->
+    <div style="border-top:1px solid var(--border);padding:12px 16px;background:var(--surface);">
+      <details>
+        <summary style="font-size:13px;cursor:pointer;color:var(--primary);font-weight:500;">显示原始 JSONL 数据</summary>
+        <pre style="margin-top:8px;font-size:11px;background:#0f172a;padding:12px;border-radius:6px;overflow-x:auto;max-height:300px;font-family:monospace;line-height:1.5;">
+{"type":"mode","mode":"normal","sessionId":"4cdf10b0-ef32-4373..."}
+{"parentUuid":null,"isSidechain":false,"attachment":{...},"type":"attachment",...}
+{"parentUuid":"...","type":"user","message":{"role":"user","content":"显示所有安装的skills"},...}
+...        </pre>
+      </details>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:12px;color:var(--muted);">设计要点：返回导航 / 会话信息头部 / 消息类型筛选 / 聊天风格对话展示 / 可折叠附件 / 原始JSONL切换</p>
+<p style="margin-top:8px;">这个详情页设计如何？</p>
+
+<div class="options">
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content"><h3>方案不错，继续下一步</h3><p>进入删除交互设计</p></div>
+  </div>
+  <div class="option" data-choice="modify" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content"><h3>需要调整</h3><p>我想提出修改意见</p></div>
+  </div>
+</div>

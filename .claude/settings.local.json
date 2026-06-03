@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm approve-builds *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm config *)",
+      "Bash(pnpm rebuild *)",
+      "Bash(git init *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'chore: initialize Next.js 16 project with TypeScript and TailwindCSS *)"
+    ]
+  }
+}

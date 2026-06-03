@@ -1,0 +1,135 @@
+<h2>首页布局设计 — 会话列表</h2>
+<p class="subtitle">「现代数据面板风」主页面布局方案</p>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">主页面布局</div>
+  <div class="mockup-body" style="padding:16px;">
+    <!-- Top bar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:18px;font-weight:600;">Claude Code 会话管理</div>
+        <div style="font-size:12px;color:var(--muted);">管理所有项目的 Claude Code 会话</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="mock-input" style="width:200px;display:inline-block;">搜索会话...</div>
+        <button class="mock-button">刷新</button>
+      </div>
+    </div>
+
+    <!-- Stats cards -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:12px;color:var(--muted);">总会话数</div>
+        <div style="font-size:24px;font-weight:600;">67</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:12px;color:var(--muted);">项目数</div>
+        <div style="font-size:24px;font-weight:600;">7</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:12px;color:var(--muted);">今日会话</div>
+        <div style="font-size:24px;font-weight:600;">3</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:12px;color:var(--muted);">占用空间</div>
+        <div style="font-size:24px;font-weight:600;">2.3 MB</div>
+      </div>
+    </div>
+
+    <!-- Filters bar -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <span class="mock-button" style="background:var(--primary);color:white;border:none;">全部</span>
+      <span class="mock-button">claude-code</span>
+      <span class="mock-button">next-ai</span>
+      <span class="mock-button">demo01</span>
+      <span class="mock-button">webapp</span>
+    </div>
+
+    <!-- Table -->
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:var(--surface);border-bottom:1px solid var(--border);">
+            <th style="padding:10px 12px;text-align:left;font-weight:600;">显示/标题</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:600;">Session ID</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:600;">时间</th>
+            <th style="padding:10px 12px;text-align:left;font-weight:600;">项目</th>
+            <th style="padding:10px 12px;text-align:center;font-weight:600;width:140px;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 12px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              <span style="font-weight:500;">显示所有已经安装的skills</span>
+            </td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:var(--muted);">4cdf10b0-ef32-4373...</td>
+            <td style="padding:10px 12px;color:var(--muted);">2026-05-29 13:53</td>
+            <td style="padding:10px 12px;color:var(--muted);">claude-code</td>
+            <td style="padding:10px 12px;text-align:center;">
+              <span style="display:inline-flex;gap:6px;">
+                <span class="mock-button" style="font-size:12px;padding:4px 10px;">详情</span>
+                <span class="mock-button" style="font-size:12px;padding:4px 10px;">删除</span>
+              </span>
+            </td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:10px 12px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              <span style="font-weight:500;">在本项目中使用pnpm install</span>
+            </td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:var(--muted);">7076e6ab-3330-4d95...</td>
+            <td style="padding:10px 12px;color:var(--muted);">2026-05-25 11:04</td>
+            <td style="padding:10px 12px;color:var(--muted);">claude-code</td>
+            <td style="padding:10px 12px;text-align:center;">
+              <span style="display:inline-flex;gap:6px;">
+                <span class="mock-button" style="font-size:12px;padding:4px 10px;">详情</span>
+                <span class="mock-button" style="font-size:12px;padding:4px 10px;">删除</span>
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              <span style="font-weight:500;">显示Claude Code的plugins</span>
+            </td>
+            <td style="padding:10px 12px;font-family:monospace;font-size:12px;color:var(--muted);">310e85e6-a62e-46c3...</td>
+            <td style="padding:10px 12px;color:var(--muted);">2026-05-29 12:45</td>
+            <td style="padding:10px 12px;color:var(--muted);">claude-code</td>
+            <td style="padding:10px 12px;text-align:center;">
+              <span style="display:inline-flex;gap:6px;">
+                <span class="mock-button" style="font-size:12px;padding:4px 10px;">详情</span>
+                <span class="mock-button" style="font-size:12px;padding:4px 10px;">删除</span>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+      <div style="font-size:12px;color:var(--muted);">显示 1-10 条，共 67 条</div>
+      <div style="display:flex;gap:4px;">
+        <span class="mock-button" style="font-size:12px;padding:4px 8px;">上一页</span>
+        <span class="mock-button" style="font-size:12px;padding:4px 8px;background:var(--primary);color:white;border:none;">1</span>
+        <span class="mock-button" style="font-size:12px;padding:4px 8px;">2</span>
+        <span class="mock-button" style="font-size:12px;padding:4px 8px;">3</span>
+        <span class="mock-button" style="font-size:12px;padding:4px 8px;">...</span>
+        <span class="mock-button" style="font-size:12px;padding:4px 8px;">7</span>
+        <span class="mock-button" style="font-size:12px;padding:4px 8px;">下一页</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:12px;color:var(--muted);">核心功能：顶部搜索 / 统计卡片 / 项目筛选 / 分页表格 / 详情和删除操作按钮</p>
+<p style="margin-top:8px;">这个布局你感觉怎么样？点击选择一种反馈，或者在终端告诉我你的想法。</p>
+
+<div class="options">
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content"><h3>方案不错，继续下一步</h3><p>进入详情页面设计</p></div>
+  </div>
+  <div class="option" data-choice="modify" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content"><h3>需要调整</h3><p>我想提出修改意见</p></div>
+  </div>
+</div>

@@ -1,0 +1,138 @@
+<h2>删除流程设计</h2>
+<p class="subtitle">点击删除后的确认弹窗及清理过程</p>
+
+<div class="section">
+  <h3>第一步：确认弹窗</h3>
+  <div class="mockup">
+    <div class="mockup-header">删除确认对话框</div>
+    <div class="mockup-body" style="padding:24px;display:flex;justify-content:center;">
+      <!-- Modal -->
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
+        <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:18px;">⚠️</span>
+            <span style="font-size:16px;font-weight:600;">确认删除会话</span>
+          </div>
+          <span style="font-size:18px;cursor:pointer;color:var(--muted);">✕</span>
+        </div>
+        <div style="padding:20px 24px;">
+          <div style="font-size:14px;margin-bottom:12px;">删除后，以下内容将被清理：</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-radius:6px;">
+              <span style="color:#ef4444;">🗑️</span>
+              <span>会话内容文件</span>
+              <span style="font-family:monospace;font-size:11px;color:var(--muted);margin-left:auto;">projects/.../xxx.jsonl</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-radius:6px;">
+              <span style="color:#ef4444;">🗑️</span>
+              <span>会话环境目录</span>
+              <span style="font-family:monospace;font-size:11px;color:var(--muted);margin-left:auto;">session-env/xxx/</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-radius:6px;">
+              <span style="color:#f59e0b;">✏️</span>
+              <span>history.jsonl 记录</span>
+              <span style="font-family:monospace;font-size:11px;color:var(--muted);margin-left:auto;">移除关联条目</span>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding:10px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:13px;color:#991b1b;">
+            <strong>会话信息：</strong>显示所有安装的skills<br>
+            <strong>Session ID：</strong><span style="font-family:monospace;">4cdf10b0-ef32-4373-927c-4a8f6b69f77c</span><br>
+            <strong>所属项目：</strong>claude-code
+          </div>
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;background:var(--surface);">
+          <span class="mock-button" style="font-size:13px;padding:8px 16px;">取消</span>
+          <span class="mock-button" style="font-size:13px;padding:8px 16px;background:#ef4444;color:white;border:none;">确认删除</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>第二步：删除进度反馈</h3>
+  <div class="mockup">
+    <div class="mockup-header">删除进度</div>
+    <div class="mockup-body" style="padding:20px 24px;">
+      <div style="font-size:14px;font-weight:500;margin-bottom:12px;">正在清理会话数据...</div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span>删除会话 JSONL 文件</span>
+            <span style="color:#10b981;">✓ 已完成</span>
+          </div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:100%;background:#10b981;border-radius:3px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span>清理 session-env 目录</span>
+            <span style="color:#10b981;">✓ 已完成</span>
+          </div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:100%;background:#10b981;border-radius:3px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span>更新 history.jsonl</span>
+            <span style="color:#3b82f6;">⏳ 处理中...</span>
+          </div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:65%;background:#3b82f6;border-radius:3px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>第三步：完成提示</h3>
+  <div class="mockup">
+    <div class="mockup-header">操作结果</div>
+    <div class="mockup-body" style="padding:20px 24px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:8px;">✅</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:4px;">会话已成功删除</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">已清理 3 项关联数据，列表已刷新</div>
+      <span class="mock-button" style="font-size:13px;background:var(--primary);color:white;border:none;padding:8px 24px;">返回列表</span>
+    </div>
+
+    <!-- Error state -->
+    <div style="border-top:1px solid var(--border);padding:16px 24px;">
+      <details>
+        <summary style="font-size:13px;cursor:pointer;color:var(--muted);font-weight:500;">错误状态处理示例</summary>
+        <div style="margin-top:12px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;">
+          <div style="display:flex;gap:8px;align-items:flex-start;">
+            <span style="font-size:16px;">❌</span>
+            <div>
+              <div style="font-weight:600;font-size:14px;color:#991b1b;">删除失败</div>
+              <div style="font-size:13px;color:#991b1b;margin-top:4px;">无法删除会话文件：projects/.../xxx.jsonl（权限不足）</div>
+              <div style="margin-top:8px;display:flex;gap:6px;">
+                <span class="mock-button" style="font-size:12px;padding:6px 12px;">重试</span>
+                <span class="mock-button" style="font-size:12px;padding:6px 12px;">跳过并继续</span>
+                <span class="mock-button" style="font-size:12px;padding:6px 12px;">取消操作</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<p style="margin-top:12px;color:var(--muted);">删除流程三步走：确认弹窗 → 进度反馈 → 完成/错误提示，覆盖所有状态</p>
+<p style="margin-top:8px;">这个删除流程设计你觉得怎么样？</p>
+
+<div class="options">
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content"><h3>方案不错，继续下一步</h3><p>进入总体设计总结和技术架构</p></div>
+  </div>
+  <div class="option" data-choice="modify" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content"><h3>需要调整</h3><p>我想提出修改意见</p></div>
+  </div>
+</div>
