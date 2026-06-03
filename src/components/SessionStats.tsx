@@ -33,12 +33,12 @@ const cards = [
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      {cards.map((card, idx) => (
+      {cards.map((card) => (
         <div
           key={card.label}
           className="group relative bg-white dark:bg-gray-800/80 rounded-xl border border-gray-200/80 dark:border-gray-700/50 p-4 hover:shadow-lg hover:shadow-indigo-500/5 dark:hover:shadow-indigo-500/10 transition-all duration-200 overflow-hidden"
         >
-          <div className={`absolute inset-0 bg-gradient-to-br ${card.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+          <div className={`absolute inset-0 bg-linear-to-br ${card.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
           <div className="relative">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">{card.label}</span>

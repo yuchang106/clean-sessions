@@ -1,7 +1,7 @@
 // src/app/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import SessionStats from '@/components/SessionStats';
 import SessionFilter from '@/components/SessionFilter';
 import SessionTable from '@/components/SessionTable';
@@ -23,6 +23,7 @@ export default function HomePage() {
   const [deleteTarget, setDeleteTarget] = useState<SessionSummary | null>(null);
   const [projects, setProjects] = useState<string[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const projectsLoaded = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,12 +47,13 @@ export default function HomePage() {
         setTotal(data.total);
         setError(null);
 
-        if (projects.length === 0 && data.stats) {
+        if (!projectsLoaded.current && data.stats) {
           const allRes = await fetch('/api/sessions?pageSize=500');
           if (cancelled) return;
           const allData = await allRes.json() as { sessions: { project: string }[] };
           const projSet = new Set(allData.sessions.map(s => s.project));
           setProjects(Array.from(projSet).sort());
+          projectsLoaded.current = true;
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : '获取数据失败');

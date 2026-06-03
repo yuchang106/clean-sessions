@@ -26,7 +26,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
   if (isMinimal) {
     return (
       <div className="flex gap-3 items-start">
-        <div className={`w-7 h-7 rounded-full ${config.color} text-white flex items-center justify-center text-xs font-bold flex-shrink-0`}>
+        <div className={`w-7 h-7 rounded-full ${config.color} text-white flex items-center justify-center text-xs font-bold shrink-0`}>
           {config.icon}
         </div>
         <div className={`flex-1 border ${config.borderColor} ${config.bgColor} rounded-lg px-4 py-2`}>
@@ -46,7 +46,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
 
   return (
     <div className="flex gap-3 items-start">
-      <div className={`w-7 h-7 rounded-full ${config.color} text-white flex items-center justify-center text-xs font-bold flex-shrink-0`}>
+      <div className={`w-7 h-7 rounded-full ${config.color} text-white flex items-center justify-center text-xs font-bold shrink-0`}>
         {config.icon}
       </div>
       <div className={`flex-1 border ${config.borderColor} ${config.bgColor} rounded-lg overflow-hidden`}>

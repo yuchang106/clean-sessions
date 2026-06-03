@@ -52,7 +52,6 @@ export function getAllSessions(): SessionSummary[] {
  */
 export function getSessionStats(): SessionStats {
   const sessions = getAllSessions();
-  const now = Date.now();
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
