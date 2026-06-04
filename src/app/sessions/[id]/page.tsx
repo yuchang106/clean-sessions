@@ -109,6 +109,7 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
     display: session.display,
     timestamp: session.timestamp,
     project: session.project,
+    entrypoint: session.entrypoint,
   };
 
   return (

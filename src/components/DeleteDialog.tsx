@@ -61,13 +61,17 @@ export default function DeleteDialog({ session, onClose, onDeleted }: DeleteDial
                   <span className="text-gray-700 dark:text-gray-300">会话环境目录 (session-env/)</span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
+                  <span className="text-red-500">🗑️</span>
+                  <span className="text-gray-700 dark:text-gray-300">文件历史记录 (file-history/)</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
                   <span className="text-amber-500">✏️</span>
                   <span className="text-gray-700 dark:text-gray-300">history.jsonl 记录</span>
                 </div>
               </div>
               <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm">
                 <p className="text-red-800 dark:text-red-300"><strong>会话信息：</strong></p>
-                <p className="text-red-700 dark:text-red-400 mt-1">{session.display}</p>
+                <p className="text-red-700 dark:text-red-400 mt-1 line-clamp-3 overflow-hidden text-ellipsis">{session.display}</p>
                 <p className="text-red-600 dark:text-red-500 font-mono text-xs mt-1">Session: {session.sessionId}</p>
                 <p className="text-red-600 dark:text-red-400 text-xs mt-0.5">项目: {session.project}</p>
               </div>
@@ -103,6 +107,15 @@ export default function DeleteDialog({ session, onClose, onDeleted }: DeleteDial
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600 dark:text-gray-400">清理 file-history 目录</span>
+                  <span className="text-green-600 dark:text-green-400">✓ 已完成</span>
+                </div>
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-full w-full bg-green-500 rounded-full"></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600 dark:text-gray-400">更新 history.jsonl</span>
                   <span className="text-blue-600 dark:text-blue-400">⏳ 处理中...</span>
                 </div>
@@ -128,7 +141,14 @@ export default function DeleteDialog({ session, onClose, onDeleted }: DeleteDial
               <>
                 <div className="text-4xl mb-3">✅</div>
                 <h2 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">会话已成功删除</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">已清理 {result?.deleted.historyEntries} 项关联数据</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  已清理 {[
+                    result?.deleted.jsonl && '会话文件',
+                    result?.deleted.sessionEnv && '环境目录',
+                    result?.deleted.fileHistory && '文件历史',
+                    result?.deleted.historyEntries ? `history.jsonl (${result.deleted.historyEntries}条)` : null,
+                  ].filter(Boolean).join('、') || '无关联数据'}
+                </p>
               </>
             )}
           </div>

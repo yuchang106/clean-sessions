@@ -18,10 +18,11 @@ export default function SessionTable({ sessions, loading, onDelete }: SessionTab
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex gap-4">
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/5"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/5"></div>
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/6"></div>
               <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/6"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/12"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/6"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
             </div>
           ))}
         </div>
@@ -46,9 +47,10 @@ export default function SessionTable({ sessions, loading, onDelete }: SessionTab
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">显示/标题</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Session ID</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">会话ID</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">时间</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">项目</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">发起点</th>
               <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider w-36">操作</th>
             </tr>
           </thead>
@@ -76,6 +78,17 @@ export default function SessionTable({ sessions, loading, onDelete }: SessionTab
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-200/50 dark:ring-indigo-500/20">
                     {session.project}
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  {session.entrypoint === 'claude-cli' ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200/50 dark:ring-blue-500/20">
+                      CLI 终端
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200/50 dark:ring-emerald-500/20">
+                      VS Code
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-center gap-2">

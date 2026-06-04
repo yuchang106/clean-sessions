@@ -8,6 +8,7 @@ const CLAUDE_DIR = path.join(process.env.HOME || '/Users/yzy', '.claude');
 const HISTORY_FILE = path.join(CLAUDE_DIR, 'history.jsonl');
 const PROJECTS_DIR = path.join(CLAUDE_DIR, 'projects');
 const SESSION_ENV_DIR = path.join(CLAUDE_DIR, 'session-env');
+const FILE_HISTORY_DIR = path.join(CLAUDE_DIR, 'file-history');
 
 /**
  * 尝试将字符串解析为内容块数组（助手消息的 content blocks 格式）
@@ -57,63 +58,165 @@ function cleanUserMessage(content: string): string {
     .trim();
 }
 
+// 无意义命令集合
+const commandSet = new Set([
+  '/exit', 'exit', '/quit', 'quit', '/clear', '/new',
+  '/resume', '/reload-plugins', '/plugins', '/help',
+  '/status', '/config', '/cost', '/effort',
+  '1', '2', '3', '4',
+]);
+
+function isCommand(display: string): boolean {
+  const d = display.trim().toLowerCase();
+  if (commandSet.has(d)) return true;
+  if (d.startsWith('/') && d.length < 20) return true;
+  if (d.length <= 1) return true;
+  return false;
+}
+
 /**
- * 读取 history.jsonl 并按 sessionId 聚合，取每组第一条有意义的非命令 display。
+ * 从项目的 JSONL 文件中解析会话摘要（用于 history.jsonl 中不存在的 VS Code 会话）
+ */
+function parseSessionSummaryFromFile(filePath: string): SessionSummary | null {
+  try {
+    const content = readFileSync(filePath, 'utf-8');
+    const lines = content.trim().split('\n').filter(Boolean);
+
+    let display = '';
+    let timestamp = 0;
+    let project = '';
+    let entrypoint: 'claude-cli' | 'claude-vscode' = 'claude-vscode';
+    let sessionId = path.basename(filePath, '.jsonl');
+
+    for (const line of lines) {
+      try {
+        const parsed = JSON.parse(line);
+
+        // sessionId
+        if (parsed.sessionId) {
+          sessionId = parsed.sessionId;
+        }
+
+        // entrypoint — 检查文件中是否明确指定
+        if (parsed.entrypoint && parsed.entrypoint !== 'claude-vscode') {
+          entrypoint = 'claude-cli';
+        }
+
+        // project (cwd)
+        if (!project && parsed.cwd) {
+          project = path.basename(parsed.cwd);
+        }
+
+        // 第一条用户消息作为 display/标题
+        if (!display && parsed.type === 'user' && parsed.message?.content) {
+          const content = parsed.message.content;
+          if (Array.isArray(content) && content[0]?.text) {
+            display = content[0].text;
+          } else if (typeof content === 'string') {
+            const cleaned = cleanUserMessage(content);
+            if (!isCommand(cleaned)) {
+              display = cleaned;
+            }
+          }
+        }
+
+        // 第一条有效时间戳
+        if (!timestamp && parsed.timestamp) {
+          if (typeof parsed.timestamp === 'string') {
+            timestamp = new Date(parsed.timestamp).getTime();
+          } else if (typeof parsed.timestamp === 'number') {
+            timestamp = parsed.timestamp;
+          }
+        }
+
+        // 取到所有需要的数据后提前退出
+        if (display && timestamp && project) break;
+      } catch {
+        continue;
+      }
+    }
+
+    if (!display && !timestamp) return null;
+
+    return {
+      sessionId,
+      display: display || '(无标题)',
+      timestamp,
+      project: project || 'unknown',
+      entrypoint,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 获取所有会话列表，同时覆盖 CLI（history.jsonl）和 VS Code（projects 目录）的会话。
  * 按时间戳降序排列。
  */
 export function getAllSessions(): SessionSummary[] {
-  if (!existsSync(HISTORY_FILE)) return [];
+  const sessions: SessionSummary[] = [];
+  const historySessionIds = new Set<string>();
 
-  const content = readFileSync(HISTORY_FILE, 'utf-8');
-  const lines = content.trim().split('\n').filter(Boolean);
+  // ---- 1. 从 history.jsonl 读取 CLI 会话 ----
+  if (existsSync(HISTORY_FILE)) {
+    const content = readFileSync(HISTORY_FILE, 'utf-8');
+    const lines = content.trim().split('\n').filter(Boolean);
 
-  // 按 sessionId 分组，保留所有记录
-  const sessionGroups = new Map<string, HistoryEntry[]>();
+    // 按 sessionId 分组
+    const sessionGroups = new Map<string, HistoryEntry[]>();
+    for (const line of lines) {
+      try {
+        const entry: HistoryEntry = JSON.parse(line);
+        const group = sessionGroups.get(entry.sessionId) || [];
+        group.push(entry);
+        sessionGroups.set(entry.sessionId, group);
+      } catch {
+        continue;
+      }
+    }
 
-  for (const line of lines) {
-    try {
-      const entry: HistoryEntry = JSON.parse(line);
-      const group = sessionGroups.get(entry.sessionId) || [];
-      group.push(entry);
-      sessionGroups.set(entry.sessionId, group);
-    } catch {
-      continue;
+    for (const [, entries] of sessionGroups) {
+      entries.sort((a, b) => a.timestamp - b.timestamp);
+
+      const best = entries.find(e => !isCommand(e.display)) || entries[0];
+      const latest = entries[entries.length - 1];
+
+      sessions.push({
+        sessionId: latest.sessionId,
+        display: best.display,
+        timestamp: latest.timestamp,
+        project: path.basename(latest.project),
+        entrypoint: 'claude-cli',
+      });
+
+      historySessionIds.add(latest.sessionId);
     }
   }
 
-  // 无意义命令集合
-  const commandSet = new Set([
-    '/exit', 'exit', '/quit', 'quit', '/clear', '/new',
-    '/resume', '/reload-plugins', '/plugins', '/help',
-    '/status', '/config', '/cost', '/effort',
-    '1', '2', '3', '4',
-  ]);
-
-  function isCommand(display: string): boolean {
-    const d = display.trim().toLowerCase();
-    if (commandSet.has(d)) return true;
-    if (d.startsWith('/') && d.length < 20) return true;
-    if (d.length <= 1) return true;
-    return false;
+  // ---- 2. 扫描 projects 目录，找出 VS Code 生成的额外会话 ----
+  if (existsSync(PROJECTS_DIR)) {
+    const projectDirs = readdirSync(PROJECTS_DIR);
+    for (const projectDir of projectDirs) {
+      const projectPath = path.join(PROJECTS_DIR, projectDir);
+      try {
+        const files = readdirSync(projectPath).filter(f => f.endsWith('.jsonl'));
+        for (const file of files) {
+          const sessionId = file.replace('.jsonl', '');
+          if (!historySessionIds.has(sessionId)) {
+            const summary = parseSessionSummaryFromFile(path.join(projectPath, file));
+            if (summary) {
+              sessions.push(summary);
+            }
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
   }
 
-  const sessions: SessionSummary[] = [];
-
-  for (const [, entries] of sessionGroups) {
-    entries.sort((a, b) => a.timestamp - b.timestamp);
-
-    // 取第一条非命令消息作为标题
-    const best = entries.find(e => !isCommand(e.display)) || entries[0];
-    const latest = entries[entries.length - 1];
-
-    sessions.push({
-      sessionId: latest.sessionId,
-      display: best.display,
-      timestamp: latest.timestamp,
-      project: path.basename(latest.project),
-    });
-  }
-
+  // ---- 3. 按时间戳降序排列 ----
   sessions.sort((a, b) => b.timestamp - a.timestamp);
   return sessions;
 }
@@ -283,6 +386,7 @@ export function getSessionDetail(sessionId: string): SessionDetail | null {
     display: summary?.display || '(无标题)',
     project: summary?.project || '',
     timestamp: summary?.timestamp || 0,
+    entrypoint: summary?.entrypoint || 'claude-cli',
     messageCount: messages.length,
     fileSize: stats.size,
     filePath,
@@ -300,11 +404,11 @@ export function getSessionRaw(sessionId: string): string | null {
 }
 
 /**
- * 删除会话（JSONL 文件、session-env 目录）
+ * 删除会话（JSONL 文件、session-env 目录、file-history 目录）
  * 注意：history.jsonl 的清理由 history.ts 处理
  */
-export async function deleteSessionFiles(sessionId: string): Promise<{ jsonl: boolean; sessionEnv: boolean }> {
-  const result = { jsonl: false, sessionEnv: false };
+export async function deleteSessionFiles(sessionId: string): Promise<{ jsonl: boolean; sessionEnv: boolean; fileHistory: boolean }> {
+  const result = { jsonl: false, sessionEnv: false, fileHistory: false };
 
   // 删除 JSONL 文件
   const filePath = findSessionFile(sessionId);
@@ -325,6 +429,17 @@ export async function deleteSessionFiles(sessionId: string): Promise<{ jsonl: bo
       result.sessionEnv = true;
     } catch {
       result.sessionEnv = false;
+    }
+  }
+
+  // 删除 file-history 目录
+  const fileHistoryDir = path.join(FILE_HISTORY_DIR, sessionId);
+  if (existsSync(fileHistoryDir)) {
+    try {
+      await rm(fileHistoryDir, { recursive: true, force: true });
+      result.fileHistory = true;
+    } catch {
+      result.fileHistory = false;
     }
   }
 

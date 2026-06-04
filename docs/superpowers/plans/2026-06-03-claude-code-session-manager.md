@@ -77,6 +77,7 @@ export interface SessionSummary {
   display: string;
   timestamp: number;
   project: string;
+  entrypoint: 'claude-cli' | 'claude-vscode';
 }
 
 /** 会话消息类型 */
@@ -99,6 +100,7 @@ export interface SessionDetail {
   display: string;
   project: string;
   timestamp: number;
+  entrypoint: 'claude-cli' | 'claude-vscode';
   messageCount: number;
   fileSize: number;
   filePath: string;
@@ -119,6 +121,7 @@ export interface DeleteResult {
   deleted: {
     jsonl: boolean;
     sessionEnv: boolean;
+    fileHistory: boolean;
     historyEntries: number;
   };
   error?: string;
@@ -143,7 +146,7 @@ export interface SessionsResponse {
 
 **依赖:** Task 1 的类型定义
 
-- [ ] **Step 1: 实现读取 history.jsonl 并获取会话列表的函数**
+- [ ] **Step 1: 实现 getAllSessions — 同时读取 history.jsonl（CLI）和扫描 projects 目录（VS Code）**
 
 ```typescript
 // src/lib/sessions.ts
@@ -156,42 +159,35 @@ const CLAUDE_DIR = path.join(process.env.HOME || '/Users/yzy', '.claude');
 const HISTORY_FILE = path.join(CLAUDE_DIR, 'history.jsonl');
 const PROJECTS_DIR = path.join(CLAUDE_DIR, 'projects');
 const SESSION_ENV_DIR = path.join(CLAUDE_DIR, 'session-env');
+const FILE_HISTORY_DIR = path.join(CLAUDE_DIR, 'file-history');
 
 /**
- * 读取 history.jsonl 并按 sessionId 聚合，取每组最新的 display。
+ * 获取所有会话列表，同时覆盖 CLI（history.jsonl）和 VS Code（projects 目录）。
  * 按时间戳降序排列。
  */
 export function getAllSessions(): SessionSummary[] {
-  if (!existsSync(HISTORY_FILE)) return [];
+  const sessions: SessionSummary[] = [];
+  const historySessionIds = new Set<string>();
 
-  const content = readFileSync(HISTORY_FILE, 'utf-8');
-  const lines = content.trim().split('\n').filter(Boolean);
-  
-  // 按 sessionId 分组，取最新的记录
-  const sessionMap = new Map<string, HistoryEntry>();
-  
-  for (const line of lines) {
-    try {
-      const entry: HistoryEntry = JSON.parse(line);
-      const existing = sessionMap.get(entry.sessionId);
-      if (!existing || entry.timestamp > existing.timestamp) {
-        sessionMap.set(entry.sessionId, entry);
-      }
-    } catch {
-      continue; // 跳过解析失败的行
-    }
+  // 1. 从 history.jsonl 读取 CLI 会话
+  if (existsSync(HISTORY_FILE)) {
+    const content = readFileSync(HISTORY_FILE, 'utf-8');
+    const lines = content.trim().split('\n').filter(Boolean);
+    // 按 sessionId 分组，取最佳 display 标题
+    // 标记 entrypoint: 'claude-cli'
   }
 
-  // 构建 summary 并按时间戳降序
-  const sessions: SessionSummary[] = Array.from(sessionMap.values())
-    .map(entry => ({
-      sessionId: entry.sessionId,
-      display: entry.display,
-      timestamp: entry.timestamp,
-      project: path.basename(entry.project), // 只取项目名
-    }))
-    .sort((a, b) => b.timestamp - a.timestamp);
+  // 2. 扫描 projects 目录，得到 VS Code 的额外会话
+  if (existsSync(PROJECTS_DIR)) {
+    const projectDirs = readdirSync(PROJECTS_DIR);
+    // 遍历每个项目目录下的 .jsonl 文件
+    // 对不在 historySessionIds 中的 session，解析其 JSONL
+    // 提取第一条用户消息作为 display
+    // 标记 entrypoint: 'claude-vscode'
+  }
 
+  // 3. 按时间戳降序排列
+  sessions.sort((a, b) => b.timestamp - a.timestamp);
   return sessions;
 }
 
@@ -338,11 +334,11 @@ export function getSessionRaw(sessionId: string): string | null {
 }
 
 /**
- * 删除会话（JSONL 文件、session-env 目录）
+ * 删除会话（JSONL 文件、session-env 目录、file-history 目录）
  * 注意：history.jsonl 的清理由 history.ts 处理
  */
-export async function deleteSessionFiles(sessionId: string): Promise<{ jsonl: boolean; sessionEnv: boolean }> {
-  const result = { jsonl: false, sessionEnv: false };
+export async function deleteSessionFiles(sessionId: string): Promise<{ jsonl: boolean; sessionEnv: boolean; fileHistory: boolean }> {
+  const result = { jsonl: false, sessionEnv: false, fileHistory: false };
 
   // 删除 JSONL 文件
   const filePath = findSessionFile(sessionId);
@@ -363,6 +359,17 @@ export async function deleteSessionFiles(sessionId: string): Promise<{ jsonl: bo
       result.sessionEnv = true;
     } catch {
       result.sessionEnv = false;
+    }
+  }
+
+  // 删除 file-history 目录
+  const fileHistoryDir = path.join(FILE_HISTORY_DIR, sessionId);
+  if (existsSync(fileHistoryDir)) {
+    try {
+      await rm(fileHistoryDir, { recursive: true, force: true });
+      result.fileHistory = true;
+    } catch {
+      result.fileHistory = false;
     }
   }
 
@@ -550,12 +557,13 @@ export async function DELETE(
       deleted: {
         jsonl: fileResult.jsonl,
         sessionEnv: fileResult.sessionEnv,
+        fileHistory: fileResult.fileHistory,
         historyEntries: historyCount,
       },
     };
 
     // 如果什么都没删掉，认为失败
-    if (!fileResult.jsonl && !fileResult.sessionEnv && historyCount === 0) {
+    if (!fileResult.jsonl && !fileResult.sessionEnv && !fileResult.fileHistory && historyCount === 0) {
       result.success = false;
       result.error = '未找到任何关联的会话数据';
       return NextResponse.json(result, { status: 404 });
@@ -887,6 +895,10 @@ export default function DeleteDialog({ session, onClose, onDeleted }: DeleteDial
                   <span className="text-gray-700 dark:text-gray-300">会话环境目录 (session-env/)</span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
+                  <span className="text-red-500">🗑️</span>
+                  <span className="text-gray-700 dark:text-gray-300">文件历史记录 (file-history/)</span>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
                   <span className="text-amber-500">✏️</span>
                   <span className="text-gray-700 dark:text-gray-300">history.jsonl 记录</span>
                 </div>
@@ -936,6 +948,15 @@ export default function DeleteDialog({ session, onClose, onDeleted }: DeleteDial
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600 dark:text-gray-400">清理 file-history 目录</span>
+                  <span className="text-green-600 dark:text-green-400">✓ 已完成</span>
+                </div>
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-full w-full bg-green-500 rounded-full"></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600 dark:text-gray-400">更新 history.jsonl</span>
                   <span className="text-blue-600 dark:text-blue-400">⏳ 处理中...</span>
                 </div>
@@ -967,7 +988,12 @@ export default function DeleteDialog({ session, onClose, onDeleted }: DeleteDial
                 <div className="text-4xl mb-3">✅</div>
                 <h2 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">会话已成功删除</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  已清理 {result?.deleted.historyEntries} 项关联数据
+                  已清理 {[
+                    result?.deleted.jsonl && '会话文件',
+                    result?.deleted.sessionEnv && '环境目录',
+                    result?.deleted.fileHistory && '文件历史',
+                    result?.deleted.historyEntries ? `history.jsonl (${result.deleted.historyEntries}条)` : null,
+                  ].filter(Boolean).join('、') || '无关联数据'}
                 </p>
               </>
             )}
@@ -1678,6 +1704,7 @@ export default function SessionDetailPage({ params }: { params: Promise<{ id: st
     display: session.display,
     timestamp: session.timestamp,
     project: session.project,
+    entrypoint: session.entrypoint,
   };
 
   return (

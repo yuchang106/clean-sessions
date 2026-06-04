@@ -9,7 +9,7 @@
 - 📋 **会话列表** — 展示所有 Claude Code 会话，支持搜索、项目筛选、分页
 - 📊 **统计概览** — 总会话数、项目数、今日会话、占用空间一目了然
 - 🔍 **会话详情** — 可视化展示 JSONL 会话内容，智能解析 text / thinking / tool_use / tool_result 等消息块
-- 🗑️ **删除会话** — 清理会话文件、session-env 目录，同步更新 history.jsonl
+- 🗑️ **删除会话** — 清理会话文件、session-env 目录、file-history 目录，同步更新 history.jsonl
 - 🌗 **暗色模式** — 跟随系统自动切换
 
 ## 技术栈
@@ -68,6 +68,7 @@ interface SessionSummary {
   display: string;    // 会话标题（取自第一条非命令消息）
   timestamp: number;
   project: string;
+  entrypoint: 'claude-cli' | 'claude-vscode';  // 会话来源（CLI 终端 / VS Code 扩展）
 }
 
 interface SessionMessage {
@@ -89,8 +90,8 @@ interface SessionMessage {
 
 ### 列表页
 1. 页面加载 → `fetch('/api/sessions')`
-2. API 读取 `~/.claude/history.jsonl`，按 sessionId 聚合，取首条非命令消息为标题
-3. 返回排序后的会话列表
+2. API 读取 `~/.claude/history.jsonl`（CLI 会话）并扫描 `~/.claude/projects/*/` 下的 JSONL 文件（VS Code 会话），合并后按时间倒序排列
+3. 返回排序后的会话列表，包含 `entrypoint` 字段标识来源
 
 ### 详情页
 1. 页面加载 → `fetch('/api/sessions/[id]')`
@@ -100,8 +101,13 @@ interface SessionMessage {
 
 ### 删除流程
 1. 点击删除 → 确认弹窗
-2. 确认 → 依次删除 JSONL 文件、session-env 目录，更新 history.jsonl
+2. 确认 → 依次删除 JSONL 文件、session-env 目录、file-history 目录，更新 history.jsonl
 3. 返回结果 → 刷新列表
+
+### 数据来源
+- **CLI 会话**: history.jsonl 索引 + projects/*/ 下的完整会话 JSONL
+- **VS Code 会话**: 仅 projects/*/ 下的完整会话 JSONL（VS Code 不写入 history.jsonl）
+- **删除清理 4 个位置**: projects/*/.jsonl、session-env/*/、file-history/*/、history.jsonl 索引
 
 ## Getting Started
 

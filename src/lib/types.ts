@@ -15,6 +15,7 @@ export interface SessionSummary {
   display: string;
   timestamp: number;
   project: string;
+  entrypoint: 'claude-cli' | 'claude-vscode';
 }
 
 /** 会话消息类型 */
@@ -53,6 +54,7 @@ export interface SessionDetail {
   display: string;
   project: string;
   timestamp: number;
+  entrypoint: 'claude-cli' | 'claude-vscode';
   messageCount: number;
   fileSize: number;
   filePath: string;
@@ -73,6 +75,7 @@ export interface DeleteResult {
   deleted: {
     jsonl: boolean;
     sessionEnv: boolean;
+    fileHistory: boolean;
     historyEntries: number;
   };
   error?: string;

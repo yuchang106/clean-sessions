@@ -17,9 +17,9 @@
 ## 目标
 
 - 读取 `~/.claude/` 目录下的所有会话数据
-- 展示会话列表（显示/标题、Session ID、时间戳、项目）
+- 展示会话列表（显示/标题、会话ID、时间戳、项目、发起点）
 - 可视化查看会话 JSONL 内容
-- 删除会话及关联文件（JSONL 文件、session-env 目录、history.jsonl 记录）
+- 删除会话及关联文件（JSONL 文件、session-env 目录、file-history 目录、history.jsonl 记录）
 
 ## 页面路由
 
@@ -41,10 +41,10 @@
 
 ### 列表页
 1. 页面加载 → `fetch('/api/sessions')`
-2. API 读取 `~/.claude/history.jsonl`
-3. 逐行解析 JSONL，按 `sessionId` 聚合，取最新的 `display` 作为标题
-4. 返回排序后的会话列表 JSON
-5. 页面渲染表格（显示/标题、Session ID、时间戳、项目、操作按钮）
+2. API 读取 `~/.claude/history.jsonl`（CLI 会话）并扫描 `~/.claude/projects/*/` 下的 JSONL 文件（VS Code 会话）
+3. 按 `sessionId` 聚合，取第一条非命令消息的 `display` 作为标题
+4. 返回合并排序后的会话列表 JSON（含 `entrypoint` 字段标识 CLI/VS Code 来源）
+5. 页面渲染表格（标题、会话ID、时间戳、项目、发起点、操作按钮）
 
 ### 详情页
 1. 页面加载 → `fetch('/api/sessions/[id]')`
@@ -60,8 +60,9 @@
 3. API Route 依次执行：
    a. 删除 `projects/*/[id].jsonl` 文件
    b. 删除 `session-env/[id]/` 目录
-   c. 读取 `history.jsonl` → 过滤掉该 `sessionId` 的所有行 → 重写文件
-4. 返回删除结果 → 前端刷新列表
+   c. 删除 `file-history/[id]/` 目录
+   d. 读取 `history.jsonl` → 过滤掉该 `sessionId` 的所有行 → 重写文件
+4. 返回删除结果（含 4 项清理状态）→ 前端刷新列表
 
 ## UI 组件树
 
@@ -103,9 +104,10 @@ src/
 // 会话列表条目
 interface SessionSummary {
   sessionId: string;
-  display: string;       // 标题（取自 history.jsonl 的最新 display）
+  display: string;       // 标题（取自第一条非命令消息）
   timestamp: number;     // 时间戳
   project: string;       // 项目路径
+  entrypoint: 'claude-cli' | 'claude-vscode';  // 会话来源
 }
 
 // 会话详情
@@ -114,8 +116,10 @@ interface SessionDetail {
   display: string;
   project: string;
   timestamp: number;
+  entrypoint: 'claude-cli' | 'claude-vscode';
   messageCount: number;
   fileSize: number;
+  filePath: string;
   messages: SessionMessage[];
 }
 
@@ -143,6 +147,7 @@ interface DeleteResult {
   deleted: {
     jsonl: boolean;
     sessionEnv: boolean;
+    fileHistory: boolean;
     historyEntries: number;  // 删除的 history.jsonl 条目数
   };
   error?: string;

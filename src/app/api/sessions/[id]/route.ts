@@ -44,12 +44,13 @@ export async function DELETE(
       deleted: {
         jsonl: fileResult.jsonl,
         sessionEnv: fileResult.sessionEnv,
+        fileHistory: fileResult.fileHistory,
         historyEntries: historyCount,
       },
     };
 
     // 如果什么都没删掉，认为失败
-    if (!fileResult.jsonl && !fileResult.sessionEnv && historyCount === 0) {
+    if (!fileResult.jsonl && !fileResult.sessionEnv && !fileResult.fileHistory && historyCount === 0) {
       result.success = false;
       result.error = '未找到任何关联的会话数据';
       return NextResponse.json(result, { status: 404 });

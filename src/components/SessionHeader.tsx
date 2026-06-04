@@ -44,7 +44,7 @@ export default function SessionHeader({ session, onDelete }: SessionHeaderProps)
       </div>
 
       {/* Session metadata */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Session ID</div>
           <code className="text-xs font-mono text-gray-700 dark:text-gray-300 break-all">
@@ -54,6 +54,20 @@ export default function SessionHeader({ session, onDelete }: SessionHeaderProps)
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">项目</div>
           <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{session.project || '-'}</div>
+        </div>
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">发起点</div>
+          <div className="text-sm font-medium">
+            {session.entrypoint === 'claude-cli' ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200/50 dark:ring-blue-500/20">
+                CLI 终端
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200/50 dark:ring-emerald-500/20">
+                VS Code 扩展
+              </span>
+            )}
+          </div>
         </div>
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">时间</div>
